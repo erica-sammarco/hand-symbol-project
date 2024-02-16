@@ -1,0 +1,13 @@
+Trial Parameters :
+ NUM_ITERATIONS : 1
+ TRIAL_LENGTH : 3
+ TRIAL_GAP_LENGTH : 2
+ PREP_TIME : 1
+ POSE_FILES : ./poses
+ PROMPT_SOUND : ./beep-2.mp3
+
+Images Used :
+ 0: ./poses/love-you.png
+ 1: ./poses/point-up.png
+ 2: ./poses/victory.png
+-------- Trial Begin : 2024-02-05 23:54:33.082188---------

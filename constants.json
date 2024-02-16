@@ -1,0 +1,8 @@
+{
+    "NUM_ITERATIONS" : 5,
+    "TRIAL_LENGTH" : 3,
+    "TRIAL_GAP_LENGTH": 2,
+    "PREP_TIME" : 1,
+    "POSE_FILES" : "./poses",
+    "PROMPT_SOUND" : "./beep-2.mp3"
+}
