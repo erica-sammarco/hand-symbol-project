@@ -1,0 +1,85 @@
+import pygame
+from pygame.locals import *
+
+# Constants for colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+
+# Define the keyboard layout
+keyboard_layout = [
+    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+    ['Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.']
+]
+
+# Define the colors for each key
+key_colors = {
+    'Q': RED,
+    'W': GREEN,
+    'E': BLUE,
+    'R': WHITE,
+    'T': RED,
+    'Y': GREEN,
+    'U': BLUE,
+    'I': WHITE,
+    'O': RED,
+    'P': GREEN,
+    'A': BLUE,
+    'S': WHITE,
+    'D': RED,
+    'F': GREEN,
+    'G': BLUE,
+    'H': WHITE,
+    'J': RED,
+    'K': GREEN,
+    'L': BLUE,
+    'Z': WHITE,
+    'X': RED,
+    'C': GREEN,
+    'V': BLUE,
+    'B': WHITE,
+    'N': RED,
+    'M': GREEN,
+    ',': BLUE,
+    '.': WHITE
+}
+
+# Function to draw the keyboard
+def draw_keyboard(screen, font):
+    key_width = 40
+    key_height = 40
+    x_offset = 20
+    y_offset = 20
+
+    for row_idx, row in enumerate(keyboard_layout):
+        for col_idx, key in enumerate(row):
+            rect = pygame.Rect(x_offset + col_idx * (key_width + 10), y_offset + row_idx * (key_height + 10), key_width, key_height)
+            pygame.draw.rect(screen, BLACK, rect, 2)  # Draw outline for the key
+            pygame.draw.rect(screen, key_colors.get(key, WHITE), rect)  # Fill the key with color
+            text_surface = font.render(key, True, BLACK)
+            text_rect = text_surface.get_rect(center=rect.center)
+            screen.blit(text_surface, text_rect)
+
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((500, 200))
+    pygame.display.set_caption('Custom Color Keyboard')
+    font = pygame.font.Font(None, 36)
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                running = False
+
+        screen.fill(WHITE)
+        draw_keyboard(screen, font)
+        pygame.display.flip()
+
+    pygame.quit()
+
+if __name__ == '__main__':
+    main()

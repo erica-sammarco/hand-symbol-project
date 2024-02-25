@@ -7,3 +7,6 @@ constants.json - Sets the parameters for the calibration program
 
 ### Data Processing
 graph-results-pipeline.ipynb - Reads a result txt file, parses the data, plugs it into the normalization and graphing ("high five") process 
+
+### Complete Experiment
+./experiment - contains the stages of the experiment from calibration to keyboard
