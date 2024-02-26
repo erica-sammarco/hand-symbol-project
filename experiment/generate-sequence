@@ -25,19 +25,8 @@ def generate(use_seed, phrase, num_symbols):
         keyboard_values.append(all_letters)
         target_values.append(all_letters[char])
         seed += 1
-    
-    print(target_values)
-
-    test_trg = "["
-    for idx, char in enumerate(sequence):
-        test_trg = test_trg + str(keyboard_values[idx][char]) + ", "
-    test_trg += "]"
-
-    print(test_trg)
 
     if phrase:
         return keyboard_values
     else:
         return target_values
-
-generate(True, True, 3)
