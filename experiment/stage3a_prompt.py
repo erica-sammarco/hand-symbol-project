@@ -1,14 +1,12 @@
 from enum import Enum
 import pygame
 import sys
-import random
 import cv2
 import datetime
 import copy
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
-import numpy as np
 from common import *
 from generate_sequence import generate
 from experiment_values import PARTICIPANT_ID, POSES, USE_SEED
