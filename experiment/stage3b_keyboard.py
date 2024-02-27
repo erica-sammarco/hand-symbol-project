@@ -255,7 +255,7 @@ while True:
             draw_poses(screen)
             draw_keyboard(screen, title, seq_index)
 
-            frame_result = {"handLandmarker": copy.deepcopy(detection_result), "trialStatus": sequence[seq_index], "time": datetime.datetime.now(), "ticks": ticks}
+            frame_result = {"handLandmarker": copy.deepcopy(detection_result), "trialStatus": sequence[seq_index][PHRASE[phrase_index].upper()], "time": datetime.datetime.now(), "ticks": ticks}
             result_file.write(str(frame_result)+"\n")
             
         else :
