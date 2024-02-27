@@ -6,7 +6,7 @@ from experiment_values import USE_SEED, POSES
 # What phrase will be used to test the user's typing?
 PHRASE = "the quick brown fox jumps over the lazy dog"
 # What should the seed start at?
-SEED = 25
+SEED = 13
 
 # Generate the sequence of poses for the above phrase
 # parameter - phrase: Indicates if you want the full set of alphabetical values 
@@ -46,4 +46,4 @@ def generate(phrase: bool):
     else:
         return target_values
     
-# generate(USE_SEED, True, POSES)
+# print(generate(False))
