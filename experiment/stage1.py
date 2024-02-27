@@ -5,15 +5,13 @@ import copy
 import random
 import string
 import os
-import glob
 import datetime
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
-from mediapipe import solutions
-from mediapipe.framework.formats import landmark_pb2
 import numpy as np
 from enum import Enum
+from common import *
 
 # CONSTANTS:
 NUM_POSES = 10
@@ -75,22 +73,7 @@ bottom_right = None
 def draw_crop_square(frame):
     return cv2.rectangle(frame, top_left, bottom_right, (0, 0, 255), 4)
 
-# Function to wrap text onto new lines
-def wrap_text(text, font, max_width):
-    words = text.split(' ')
-    lines = []
-    current_line = ''
-    for word in words:
-        if font.size(current_line + ' ' + word)[0] <= max_width:
-            current_line += ' ' + word if current_line else word
-        else:
-            lines.append(current_line)
-            current_line = word
-    lines.append(current_line)
-    return lines
-
 # Set up CALIBRATE state
-trial_running = False
 sound_played = False
 image_index = 0
 image_order = []
@@ -115,63 +98,11 @@ result_file = None
 paricipant_id_doc = open("./participants.txt", "a")
 paricipant_id_doc.write('Date/Time: {} , Participant ID: {}\n'.format(datetime.datetime.now(), participant_id))
 
-
-def glob_filetypes(root_dir, *patterns):
-                return [path
-                        for pattern in patterns
-                        for path in glob.glob(os.path.join(root_dir, pattern))]
-
 # Create an HandLandmarker object.
 base_options = python.BaseOptions(model_asset_path='../hand_landmarker.task')
 options = vision.HandLandmarkerOptions(base_options=base_options,
                                     num_hands=4)
 detector = vision.HandLandmarker.create_from_options(options)
-
-MARGIN = 10  # pixels
-FONT_SIZE = 2
-FONT_THICKNESS = 2
-HANDEDNESS_TEXT_COLOR = (88, 205, 54) # vibrant green
-
-def draw_landmarks_on_image(rgb_image, detection_result):
-  #print(rgb_image)
-  hand_landmarks_list = detection_result.hand_landmarks
-  handedness_list = detection_result.handedness
-  annotated_image = np.copy(rgb_image)
-
-  # Loop through the detected hands to visualize.
-  for idx in range(len(hand_landmarks_list)):
-    hand_landmarks = hand_landmarks_list[idx]
-    handedness = handedness_list[idx]
-
-    # Draw the hand landmarks.
-    hand_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
-    hand_landmarks_proto.landmark.extend([
-      landmark_pb2.NormalizedLandmark(x=landmark.x, y=landmark.y, z=landmark.z) for landmark in hand_landmarks
-    ])
-
-    # print(annotated_image)
-    solutions.drawing_utils.draw_landmarks(
-      annotated_image,
-      hand_landmarks_proto,
-      solutions.hands.HAND_CONNECTIONS,
-      solutions.drawing_styles.get_default_hand_landmarks_style(),
-      solutions.drawing_styles.get_default_hand_connections_style())
-
-    # Get the top left corner of the detected hand's bounding box.
-    height, width, _ = annotated_image.shape
-    x_coordinates = [landmark.x for landmark in hand_landmarks]
-    y_coordinates = [landmark.y for landmark in hand_landmarks]
-    text_x = int(min(x_coordinates) * width)
-    text_y = int(min(y_coordinates) * height) - MARGIN
-
-    # Draw handedness (left or right hand) on the image.
-    # annotated_image = cv2.flip(annotated_image, 1)
-    cv2.putText(annotated_image, f"{handedness[0].category_name}",
-                (text_x, text_y), cv2.FONT_HERSHEY_DUPLEX,
-                FONT_SIZE, HANDEDNESS_TEXT_COLOR, FONT_THICKNESS, cv2.LINE_AA)
-
-  return annotated_image
-
 
 while True:
     # Clear the screen
@@ -199,7 +130,6 @@ while True:
                 converted = pygame.surfarray.make_surface(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB).swapaxes(0, 1))
                 converted = pygame.transform.scale(converted, (converted.get_width()/5, converted.get_height()/5))
                 screen.blit(converted, (width // 2 - converted.get_width() // 2, 20))
-
 
     if current_state is State.START:
         text = title.render("Press L or R to begin experiment set up.", True, blue)
@@ -229,7 +159,7 @@ while True:
         # Render each line onto a surface
         text_surfaces = [long_text.render(line, True, blue) for line in wrapped_lines]
         count = title.render('Remaining Positions: {}'.format(NUM_POSES - img_counter), True, green)
-        text_surfaces.append(count)
+        text_surfaces.insert(0, count)
         
         # Blit each text surface onto the window
         for i, text_surface in enumerate(text_surfaces):
@@ -268,9 +198,6 @@ while True:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    print("space")
         
         if not initialized:
             # Accessing pose files
@@ -307,12 +234,12 @@ while True:
             result_file = open("./calibration-results/" + result_filename, 'a')
 
             result_file.write('Trial Parameters :\n')
-            result_file.write(' NUM_POSES: {}'.format(NUM_POSES))
-            result_file.write(' NUM_ITERATIONS: {}'.format(NUM_ITERATIONS))
-            result_file.write(' PREP_TIME: {}'.format(PREP_TIME))
-            result_file.write(' TRIAL_LENGTH: {}'.format(TRIAL_LENGTH))
-            result_file.write(' TRIAL_GAP_LENGTH: {}'.format(TRIAL_GAP_LENGTH))
-            result_file.write(' ACQUIRE_IMAGES: {}'.format(ACQUIRE_IMAGES))
+            result_file.write(' NUM_POSES: {}\n'.format(NUM_POSES))
+            result_file.write(' NUM_ITERATIONS: {}\n'.format(NUM_ITERATIONS))
+            result_file.write(' PREP_TIME: {}\n'.format(PREP_TIME))
+            result_file.write(' TRIAL_LENGTH: {}\n'.format(TRIAL_LENGTH))
+            result_file.write(' TRIAL_GAP_LENGTH: {}\n'.format(TRIAL_GAP_LENGTH))
+            result_file.write(' ACQUIRE_IMAGES: {}\n'.format(ACQUIRE_IMAGES))
 
             result_file.write('\nImages Used :\n')
             for idx, f in enumerate(files):
@@ -353,8 +280,6 @@ while True:
         else :
             current_state = State.DONE
             result_file.write('-------- Trial End : {}---------\n'.format(datetime.datetime.now()))
-        
-
     if current_state is State.DONE:
         text = title.render("Experiment set-up complete", True, blue)
         text2 = title.render("Press any key to quit.", True, blue) 
@@ -370,9 +295,6 @@ while True:
                 pygame.quit()
                 sys.exit()
     
-
-            
-
     # Update the display
     pygame.display.flip()
 
