@@ -5,6 +5,20 @@ from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 import cv2
 
+# Define colors
+black = (0, 0, 0)
+white = (255, 255, 255)
+grey = (145, 145, 145)
+red = (208, 0, 0)
+green = (32, 191, 85)
+blue = (30, 150, 252)
+yellow = (252, 243, 0)
+pink = (230, 55, 191)
+purple = (141, 0, 201)
+ice_blue = (155, 243, 240)
+light_green = (179, 255, 179)
+orange = (255, 87, 20)
+
 # Function to wrap text onto new lines
 def wrap_text(text, font, max_width):
     words = text.split(' ')

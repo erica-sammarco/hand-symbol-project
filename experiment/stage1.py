@@ -38,13 +38,6 @@ subtitle = pygame.font.Font(None, 30)
 long_text = pygame.font.Font(None, 24)
 line_space = 40
 
-# Define colors
-black = (0, 0, 0)
-white = (255, 255, 255)
-blue = (17, 21, 255)
-green = (56, 196, 65)
-red = (245, 64, 43)
-
 # Initialize State
 State = Enum('State', ['START', 'ACQUIRE', 'CAL_START', 'CALIBRATE', 'DONE'])
 current_state = State.START if ACQUIRE_IMAGES else State.CAL_START

@@ -1,12 +1,7 @@
 from string import ascii_uppercase
 import numpy as np
 
-from experiment_values import USE_SEED, POSES
-
-# What phrase will be used to test the user's typing?
-PHRASE = "the quick brown fox jumps over the lazy dog"
-# What should the seed start at?
-SEED = 13
+from experiment_values import USE_SEED, POSES, PHRASE, SEED
 
 # Generate the sequence of poses for the above phrase
 # parameter - phrase: Indicates if you want the full set of alphabetical values 
