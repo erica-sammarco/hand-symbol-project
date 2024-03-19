@@ -66,6 +66,20 @@ bottom_right = None
 def draw_crop_square(frame):
     return cv2.rectangle(frame, top_left, bottom_right, (0, 0, 255), 4)
 
+desired_height = 215
+desired_width = 385
+def scale_img(img):
+    # Calculate scaling factor
+    height_scale_factor = desired_height / img.get_height()
+    width_scale_factor = desired_width / img.get_width()
+
+    # Apply scaling factors to maintain aspect ratio
+    image = pygame.transform.scale(img, (int(img.get_width() * width_scale_factor),
+                                        int(img.get_height() * height_scale_factor)))
+    
+    return image
+
+
 # Set up CALIBRATE state
 sound_played = False
 image_index = 0
@@ -116,12 +130,12 @@ while True:
                 annotated_image = draw_landmarks_on_image(img.numpy_view(), detection_result)
             
                 converted = pygame.surfarray.make_surface(annotated_image.swapaxes(0, 1))
-                converted = pygame.transform.scale(converted, (converted.get_width()/5, converted.get_height()/5))
+                converted = scale_img(converted)
                 screen.blit(converted, (width // 2 - converted.get_width() // 2, 20))
 
             else:
                 converted = pygame.surfarray.make_surface(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB).swapaxes(0, 1))
-                converted = pygame.transform.scale(converted, (converted.get_width()/5, converted.get_height()/5))
+                converted = scale_img(converted)
                 screen.blit(converted, (width // 2 - converted.get_width() // 2, 20))
 
     if current_state is State.START:
