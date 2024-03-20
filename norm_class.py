@@ -1,4 +1,4 @@
-from parse import *
+from experiment.parse import *
 
 
 class NormClass:
@@ -9,25 +9,50 @@ class NormClass:
     pass
 
     def __init__(self):
-        pass
+        self.template = None
+        self.class_label = None
 
     def train(self, x, y):
-        pass
+        """ template is average across all trials """
+        self.class_label = np.unique(y)
+        self.template = np.zeros((x.shape[0], self.class_label.size))
+        error = np.zeros_like(x)
+        for idx, _y in enumerate(self.class_label):
+            _x = x[:, _y == y]
+            self.template[:, idx] = _x.mean(axis=1)
+            error[:, _y == y] = self.template[:, idx][:, np.newaxis] - _x
+
+        # estimate variance (needed to compute absolute likelihoods)
+        # self.var = (error ** 2).sum() / (error.size - 1)
 
     def predict(self, x):
-        pass
+        """ predict class with min sum of squared error (all have same var) """
+        error = self._get_error(x)
+        y_pred_idx = np.argmin((error ** 2).sum(axis=0), axis=1)
+        return self.class_label[y_pred_idx]
+
+    def _get_error(self, x):
+        """ for each sample & target class, compute sum of squared error """
+        n_feature, n_sample = x.shape
+        error = np.zeros((n_feature, n_sample, self.class_label.size))
+        for class_idx in range(self.class_label.size):
+            # sum of squared errors
+            temp = self.template[:, class_idx]
+            error[:, :, class_idx] = (x - temp[:, np.newaxis])
+
+        return error
 
     def predict_proba(self, x):
-        pass
+        error = self._get_error(x)
 
+        # not normalized log likelihood
+        log_like = -np.log(error ** 2).sum(axis=0)
 
-if __name__ == '__main__':
-    import pathlib
+        # subtract max from likelihoods (numerical precision if many features)
+        log_like -= log_like.max(axis=1)[:, np.newaxis]
 
-    path_input = pathlib.Path('./experiment/prompt-results/jtdawc_3.txt')
-    with open(path_input, 'r') as f:
-        s = f.read()
+        # out of log space & normalize
+        prob = np.exp(log_like)
+        prob /= prob.sum(axis=1)[:, np.newaxis]
 
-    d = parse(s)
-
-    x = np.stack([Landmark.to_numpy(lmk_list) for lmk_list in d['normalized']])
+        return prob
