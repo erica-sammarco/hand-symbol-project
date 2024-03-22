@@ -3,7 +3,7 @@ from itertools import product
 import numpy as np
 from sklearn.metrics import accuracy_score
 
-from experiment.norm_class import NormClass
+from norm_class import NormClass
 
 
 def test_norm_class():
@@ -28,7 +28,7 @@ def test_norm_class():
 
         # at given snr, we should have at least acc_exp accuracy
         norm_class = NormClass()
-        norm_class.train(x, y_true)
+        norm_class.fit(x, y_true)
         y_pred = norm_class.predict(x)
         assert accuracy_score(y_true=y_true, y_pred=y_pred) >= acc_exp
 

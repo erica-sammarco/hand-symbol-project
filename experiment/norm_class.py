@@ -1,7 +1,5 @@
+import numpy as np
 from scipy.stats import multivariate_normal
-from sklearn.covariance import ShrunkCovariance
-
-from experiment.parse import *
 
 
 class NormClass:
@@ -15,16 +13,28 @@ class NormClass:
         self.mv_norm_list = None
         self.class_label = None
 
-    def train(self, x, y):
+    def fit(self, x, y):
         """ template is average across all trials """
         self.class_label = np.unique(y)
         self.mv_norm_list = list()
-        shrunk_cov = ShrunkCovariance(shrinkage=1)
+
+        # compute mu
+        mu_list = list()
+        sample_centered = list()
         for _y in self.class_label:
             _x = x[_y == y, :]
             mu = _x.mean(axis=0)
-            cov = shrunk_cov.fit(_x).covariance_
-            self.mv_norm_list.append(multivariate_normal(mean=mu, cov=cov))
+            mu_list.append(mu)
+            sample_centered.append(_x - mu)
+
+        # compute cov
+        error = np.vstack(sample_centered).flatten()
+        var = (error ** 2).sum() / (error.size - 1)
+        cov = np.eye(x.shape[1]) * var
+
+        # build mv_norm
+        self.mv_norm_list = [multivariate_normal(mean=mu, cov=cov)
+                             for mu in mu_list]
 
     def predict(self, *args, **kwargs):
         """ predict class with min sum of squared error (all have same var) """
