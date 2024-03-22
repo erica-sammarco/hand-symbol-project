@@ -3,7 +3,7 @@ from itertools import product
 import numpy as np
 from sklearn.metrics import accuracy_score
 
-from norm_class import NormClass
+from experiment.norm_class import NormClass
 
 
 def test_norm_class():
