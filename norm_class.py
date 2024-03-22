@@ -1,3 +1,6 @@
+from scipy.stats import multivariate_normal
+from sklearn.covariance import ShrunkCovariance
+
 from experiment.parse import *
 
 
@@ -9,50 +12,38 @@ class NormClass:
     pass
 
     def __init__(self):
-        self.template = None
+        self.mv_norm_list = None
         self.class_label = None
 
     def train(self, x, y):
         """ template is average across all trials """
         self.class_label = np.unique(y)
-        self.template = np.zeros((x.shape[0], self.class_label.size))
-        error = np.zeros_like(x)
-        for idx, _y in enumerate(self.class_label):
-            _x = x[:, _y == y]
-            self.template[:, idx] = _x.mean(axis=1)
-            error[:, _y == y] = self.template[:, idx][:, np.newaxis] - _x
+        self.mv_norm_list = list()
+        shrunk_cov = ShrunkCovariance(shrinkage=1)
+        for _y in self.class_label:
+            _x = x[_y == y, :]
+            mu = _x.mean(axis=0)
+            cov = shrunk_cov.fit(_x).covariance_
+            self.mv_norm_list.append(multivariate_normal(mean=mu, cov=cov))
 
-        # estimate variance (needed to compute absolute likelihoods)
-        # self.var = (error ** 2).sum() / (error.size - 1)
-
-    def predict(self, x):
+    def predict(self, *args, **kwargs):
         """ predict class with min sum of squared error (all have same var) """
-        error = self._get_error(x)
-        y_pred_idx = np.argmin((error ** 2).sum(axis=0), axis=1)
-        return self.class_label[y_pred_idx]
+        log_prob = self.predict_log_prob(*args, **kwargs)
+        return log_prob.argmax(axis=1)
 
-    def _get_error(self, x):
-        """ for each sample & target class, compute sum of squared error """
-        n_feature, n_sample = x.shape
-        error = np.zeros((n_feature, n_sample, self.class_label.size))
-        for class_idx in range(self.class_label.size):
-            # sum of squared errors
-            temp = self.template[:, class_idx]
-            error[:, :, class_idx] = (x - temp[:, np.newaxis])
+    def predict_log_prob(self, x):
+        n_sample, n_feat = x.shape
+        n_class = len(self.class_label)
+        log_like = np.zeros((n_sample, n_class))
+        for class_idx in range(n_class):
+            log_like[:, class_idx] = self.mv_norm_list[class_idx].logpdf(x)
 
-        return error
+        return log_like
 
-    def predict_proba(self, x):
-        error = self._get_error(x)
-
-        # not normalized log likelihood
-        log_like = -np.log(error ** 2).sum(axis=0)
-
-        # subtract max from likelihoods (numerical precision if many features)
+    def predict_apost(self, *args, **kwargs):
+        """ a posteriori """
+        log_like = self.predict_log_prob(*args, **kwargs)
         log_like -= log_like.max(axis=1)[:, np.newaxis]
-
-        # out of log space & normalize
         prob = np.exp(log_like)
         prob /= prob.sum(axis=1)[:, np.newaxis]
-
         return prob
