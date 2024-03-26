@@ -143,7 +143,7 @@ def parse(s):
             landmark_world[name].append(landmark_results["world"][idx])
             trial_status[name].append(trial)
 
-    # find which hand was most common in trial (we'll use this one0
+    # find which hand was most common in trial (we'll use this one)
     hand_common = max(landmark, key=lambda x: len(landmark.get(x)))
 
     # to numpy
@@ -151,7 +151,7 @@ def parse(s):
                     for lmk_list in landmark[hand_common]], axis=2)
     lmk_world = np.stack([Landmark.to_numpy(lmk_list)
                           for lmk_list in landmark_world[hand_common]], axis=2)
-    trigger = np.array(trial_status['right'])
+    trigger = np.array(trial_status[hand_common])
 
     return lmk, lmk_world, trigger
 
