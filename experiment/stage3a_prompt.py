@@ -9,11 +9,14 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from common import *
 from generate_sequence import generate
-from experiment_values import PARTICIPANT_ID, POSES, USE_SEED
+from experiment_values import PARTICIPANT_ID, POSES, NUM_POSES, USE_SEED
 
 # How long of a gap should there be between 
 # the user pressing space and the next image being displayed?
 BREAK_TIME = 2
+
+# Poses used in this trial
+CURR_POSES = POSES[0:NUM_POSES]
 
 image_types = ["*.jpg", "*.jpeg", "*.png"]
 filepath = './images/{}'.format(PARTICIPANT_ID)
@@ -37,7 +40,7 @@ line_space = 40
 
 # Load images
 images = []
-for image_idx in POSES:
+for image_idx in CURR_POSES:
     original_image = pygame.image.load(files[image_idx])
 
     # Desired size for the image
@@ -130,7 +133,7 @@ while True:
 
                     result_file = open('./prompt-results/{}_{}.txt'.format(PARTICIPANT_ID, prev_trials), 'a')
                     result_file.write('Trial Parameters :\n')
-                    result_file.write(' POSES: {}\n'.format(POSES))
+                    result_file.write(' POSES: {}\n'.format(CURR_POSES))
                     result_file.write(' USE_SEED: {}\n'.format(USE_SEED))
                     result_file.write(' SEQUENCE: {}\n'.format(sequence))
 
@@ -164,7 +167,7 @@ while True:
                     start = last_event + (BREAK_TIME * 1000)
         
         if seq_index < len(sequence) : 
-            image_idx = POSES.index(sequence[seq_index])
+            image_idx = CURR_POSES.index(sequence[seq_index])
             image = images[image_idx]
             ticks = pygame.time.get_ticks()
             

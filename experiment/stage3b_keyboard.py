@@ -15,6 +15,9 @@ from experiment_values import *
 # the user pressing space and the next image being displayed?
 BREAK_TIME = 2
 
+# Poses used in this trial
+CURR_POSES = POSES[0:NUM_POSES]
+
 image_types = ["*.jpg", "*.jpeg", "*.png"]
 filepath = './images/{}'.format(PARTICIPANT_ID)
 files = glob_filetypes(filepath, "*.jpg", "*.jpeg", "*.png")
@@ -40,7 +43,7 @@ pose_width = 100
 
 # Load images
 images = []
-for image_idx in POSES:
+for image_idx in CURR_POSES:
     original_image = pygame.image.load(files[image_idx])
 
     # Calculate scaling factor
@@ -103,7 +106,7 @@ def get_key_color(key, seq_idx):
         return white
     else:
         key_pose = sequence[seq_index][key]
-        color_idx = POSES.index(key_pose)
+        color_idx = CURR_POSES.index(key_pose)
         return colors[color_idx]
 
 key_width = 60
@@ -125,11 +128,11 @@ def draw_keyboard(screen, font, seq_idx):
             screen.blit(text_surface, text_rect)
 
 pose_gap = 30
-poses_x_offset = (width - (len(POSES) * (pose_width + pose_gap))) // 2
+poses_x_offset = (width - (len(CURR_POSES) * (pose_width + pose_gap))) // 2
 poses_y_offset = keyboard_y_offset - pose_width - pose_gap
 
 def draw_poses(screen):
-    for idx, p in enumerate(POSES):
+    for idx, p in enumerate(CURR_POSES):
         image = images[idx] 
         x_pos = poses_x_offset + idx * (pose_width + pose_gap)
         screen.blit(image, (x_pos, poses_y_offset))
@@ -214,7 +217,7 @@ while True:
 
                     result_file = open('./keyboard-results/{}_{}.txt'.format(PARTICIPANT_ID, prev_trials), 'a')
                     result_file.write('Trial Parameters :\n')
-                    result_file.write(' POSES: {}\n'.format(POSES))
+                    result_file.write(' POSES: {}\n'.format(CURR_POSES))
                     result_file.write(' BREAK_TIME: {}\n'.format(BREAK_TIME))
                     result_file.write(' USE_SEED: {}\n'.format(USE_SEED))
                     result_file.write(' SEED: {}\n'.format(SEED))

@@ -1,7 +1,7 @@
 from string import ascii_uppercase
 import numpy as np
 
-from experiment_values import USE_SEED, POSES, PHRASE, SEED
+from experiment_values import USE_SEED, POSES, NUM_POSES, PHRASE, SEED
 
 # Generate the sequence of poses for the above phrase
 # parameter - phrase: Indicates if you want the full set of alphabetical values 
@@ -20,7 +20,7 @@ def generate(phrase: bool):
         else: 
             rng = np.random.default_rng()
         
-        user_symbol_idx = rng.integers(low=0, high=len(POSES), size=len(ascii_uppercase))
+        user_symbol_idx = rng.integers(low=0, high=len(POSES[0:NUM_POSES]), size=len(ascii_uppercase))
         user_symbols_all = [POSES[idx] for idx in user_symbol_idx]
         all_letters = dict(zip(ascii_uppercase, user_symbols_all))
         keyboard_values.append(all_letters)

@@ -14,7 +14,7 @@ from enum import Enum
 from common import *
 
 # CONSTANTS:
-NUM_POSES = 10
+NUM_POSES = 6
 NUM_ITERATIONS = 3
 PREP_TIME = 1
 TRIAL_LENGTH = 3
