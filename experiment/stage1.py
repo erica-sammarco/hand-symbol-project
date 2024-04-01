@@ -19,7 +19,7 @@ NUM_ITERATIONS = 7
 PREP_TIME = 1.5
 TRIAL_LENGTH = 1
 TRIAL_GAP_LENGTH = 1
-ACQUIRE_IMAGES = False
+ACQUIRE_IMAGES = True
 # If you would like to use previously loaded images for calibration
 # store the filepath to the images folder here:
 IMG_FILEPATH = "./images/original_poses"
