@@ -8,7 +8,7 @@ USE_SEED = True
 # What should the seed start at?
 SEED = 13
 # What phrase will be used to test the user's typing?
-PHRASE = "the quick brown fox jumps over the lazy dog"
+PHRASE = "the quick brown fox jumps over the lazy dog who just yawns"
 # What order are positions most identifiable?
 POSES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 # How many poses should be used for this trial?
