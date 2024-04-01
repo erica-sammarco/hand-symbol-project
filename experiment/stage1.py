@@ -15,11 +15,11 @@ from common import *
 
 # CONSTANTS:
 NUM_POSES = 6
-NUM_ITERATIONS = 3
-PREP_TIME = 1
-TRIAL_LENGTH = 3
+NUM_ITERATIONS = 7
+PREP_TIME = 1.5
+TRIAL_LENGTH = 1
 TRIAL_GAP_LENGTH = 1
-ACQUIRE_IMAGES = True
+ACQUIRE_IMAGES = False
 # If you would like to use previously loaded images for calibration
 # store the filepath to the images folder here:
 IMG_FILEPATH = "./images/original_poses"
@@ -39,8 +39,9 @@ long_text = pygame.font.Font(None, 24)
 line_space = 40
 
 # Initialize State
-State = Enum('State', ['START', 'ACQUIRE', 'CAL_START', 'CALIBRATE', 'DONE'])
+State = Enum('State', ['START', 'ACQUIRE', 'CAL_START', 'CALIBRATE', 'DONE', 'PAUSE'])
 current_state = State.START if ACQUIRE_IMAGES else State.CAL_START
+old_state = current_state
 participant_id = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
 img_counter = 0
 initialized = False
@@ -123,7 +124,7 @@ while True:
             frame = np.copy(flipped)
             if current_state is State.ACQUIRE and top_left and bottom_right:
                 frame = draw_crop_square(frame)
-            if current_state is State.CALIBRATE or current_state is State.CAL_START:
+            if current_state is State.CALIBRATE or current_state is State.CAL_START or current_state is State.PAUSE:
                 img = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(original_frame, cv2.COLOR_BGR2RGB))
                 detection_result = detector.detect(img)
 
@@ -137,7 +138,6 @@ while True:
                 converted = pygame.surfarray.make_surface(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB).swapaxes(0, 1))
                 converted = scale_img(converted)
                 screen.blit(converted, (width // 2 - converted.get_width() // 2, 20))
-
     if current_state is State.START:
         text = title.render("Press L or R to begin experiment set up.", True, blue)
         text2 = subtitle.render("L or R indicates which hand will be used.", True, blue) 
@@ -205,7 +205,15 @@ while True:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    old_state = current_state
+                    current_state = State.PAUSE
         
+        curr_trial = title.render('Trial {} of {}'.format(image_index + 1, len(image_order)), True, blue)
+        curr_trial_rect = curr_trial.get_rect(center=(width // 2, height - 50))
+        screen.blit(curr_trial, curr_trial_rect)
+
         if not initialized:
             # Accessing pose files
             files = glob_filetypes(IMG_FILEPATH, "*.jpg", "*.jpeg", "*.png")
@@ -255,16 +263,17 @@ while True:
 
             last_event = pygame.time.get_ticks()
             play_sound = last_event + (PREP_TIME * 1000)
-            stop_image = last_event + (TRIAL_LENGTH * 1000)
+            stop_image = last_event + ((PREP_TIME + TRIAL_LENGTH) * 1000)
             start = last_event
             
             initialized = True
-        if image_index < len(image_order) : 
+        if image_index < len(image_order) and current_state is not State.PAUSE : 
             image = images[image_order[image_index]]
             ticks = pygame.time.get_ticks()
             if(ticks >= start) :
                 screen.blit(image, (width // 2 - image.get_width() // 2, ((height - converted.get_height()/5) // 2 - image.get_height() // 2) + (2 * converted.get_height()/5) + 40))
-                frame_result = {"handLandmarker": copy.deepcopy(detection_result), "trialStatus": image_order[image_index], "time": ticks}
+                status = image_order[image_index] if sound_played  else -1
+                frame_result = {"handLandmarker": copy.deepcopy(detection_result), "trialStatus": status, "time": ticks}
                 result_file.write(str(frame_result)+"\n")
             else : 
                 frame_result = {"handLandmarker": copy.deepcopy(detection_result), "trialStatus": -1, "time": ticks}
@@ -283,10 +292,31 @@ while True:
                 last_event = ticks
                 start = last_event + (TRIAL_GAP_LENGTH * 1000)
                 play_sound = start + (PREP_TIME * 1000)
-                stop_image = start + (TRIAL_LENGTH * 1000)
-        else :
+                stop_image = start + ((PREP_TIME + TRIAL_LENGTH) * 1000)
+        elif image_index >= len(image_order):
             current_state = State.DONE
             result_file.write('-------- Trial End : {}---------\n'.format(datetime.datetime.now()))
+    if current_state is State.PAUSE:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    current_state = old_state
+                    last_event = pygame.time.get_ticks()
+                    start = last_event + (TRIAL_GAP_LENGTH * 1000)
+                    play_sound = start + (PREP_TIME * 1000)
+                    stop_image = start + ((PREP_TIME + TRIAL_LENGTH) * 1000)
+                    sound_played = False
+
+        status = -2
+        frame_result = {"handLandmarker": copy.deepcopy(detection_result), "trialStatus": status, "time": ticks}
+        result_file.write(str(frame_result)+"\n")
+
+        pause_txt = title.render("Calibration paused. Press space to continue.", True, blue) 
+        pause_txt_rect = pause_txt.get_rect(center=(width // 2, height // 2+line_space))
+        screen.blit(pause_txt, pause_txt_rect)
     if current_state is State.DONE:
         text = title.render("Experiment set-up complete", True, blue)
         text2 = title.render("Press any key to quit.", True, blue) 

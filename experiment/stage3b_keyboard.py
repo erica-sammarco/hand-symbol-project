@@ -28,7 +28,7 @@ print(files)
 pygame.init()
 
 # Set up display
-width, height = 800, 800
+width, height = 800, 850
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Hand Pose Keyboard Trial")
 
@@ -66,7 +66,7 @@ keyboard_layout = [
 colors = [red, green, blue, yellow, pink, ice_blue, purple, light_green, orange, white]
 
 # Initialize State
-State = Enum('State', ['START', 'PROMPT', 'BREAK', 'DONE'])
+State = Enum('State', ['START', 'PROMPT', 'BREAK', 'DONE', 'PAUSE'])
 current_state = State.START
 sequence = generate(True)
 seq_index = -1
@@ -112,7 +112,7 @@ def get_key_color(key, seq_idx):
 key_width = 60
 key_height = 60
 key_gap = 15
-keyboard_y_offset = height - (len(keyboard_layout) * (key_height + key_gap)) - 20
+keyboard_y_offset = height - (len(keyboard_layout) * (key_height + key_gap)) - 60
 
 # Function to draw the keyboard
 def draw_keyboard(screen, font, seq_idx):
@@ -236,10 +236,17 @@ while True:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    current_state = State.PAUSE
 
         draw_text(screen, phrase_index, False)
         draw_poses(screen)
         draw_keyboard(screen, title, -1)
+
+        curr_trial = title.render('Trial {} of {}'.format(seq_index + 1, len(sequence)), True, grey)
+        curr_trial_rect = curr_trial.get_rect(center=(width // 2, height - 30))
+        screen.blit(curr_trial, curr_trial_rect)
 
         ticks = pygame.time.get_ticks()
         frame_result = {"handLandmarker": copy.deepcopy(detection_result), "trialStatus": -1, "time": datetime.datetime.now(), "ticks": ticks}
@@ -253,15 +260,19 @@ while True:
             last_event = ticks
         
     if current_state is State.PROMPT:
-        if seq_index < len(sequence) : 
+        if seq_index < len(sequence): 
             draw_text(screen, phrase_index, True)
             draw_poses(screen)
             draw_keyboard(screen, title, seq_index)
 
+            curr_trial = title.render('Trial {} of {}'.format(seq_index + 1, len(sequence)), True, grey)
+            curr_trial_rect = curr_trial.get_rect(center=(width // 2, height - 30))
+            screen.blit(curr_trial, curr_trial_rect)
+
             frame_result = {"handLandmarker": copy.deepcopy(detection_result), "trialStatus": sequence[seq_index][PHRASE[phrase_index].upper()], "time": datetime.datetime.now(), "ticks": ticks}
             result_file.write(str(frame_result)+"\n")
             
-        else :
+        elif seq_index >= len(sequence):
             current_state = State.DONE
             result_file.write('-------- Trial End : {}---------\n'.format(datetime.datetime.now()))
         
@@ -275,6 +286,25 @@ while True:
                     phrase_index = increment_phrase_idx(phrase_index)
                     last_event = pygame.time.get_ticks()
                     start = last_event + (BREAK_TIME * 1000)
+                if event.key == pygame.K_p:
+                    current_state = State.PAUSE
+    if current_state is State.PAUSE:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    current_state = State.BREAK
+                    last_event = pygame.time.get_ticks()
+                    start = last_event + (BREAK_TIME * 1000)
+
+        frame_result = {"handLandmarker": copy.deepcopy(detection_result), "trialStatus": -2, "time": datetime.datetime.now(), "ticks": ticks}
+        result_file.write(str(frame_result)+"\n")
+
+        pause_txt = title.render("Experiment paused. Press space to continue.", True, blue) 
+        pause_txt_rect = pause_txt.get_rect(center=(width // 2, height // 2+line_space))
+        screen.blit(pause_txt, pause_txt_rect)
     if current_state is State.DONE:
         text = title.render("Trial complete", True, blue)
         text2 = title.render("Press any key to quit.", True, blue) 

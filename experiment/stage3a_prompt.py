@@ -56,7 +56,7 @@ for image_idx in CURR_POSES:
     images.append(image)
 
 # Initialize State
-State = Enum('State', ['START', 'PROMPT', 'BREAK', 'DONE'])
+State = Enum('State', ['START', 'PROMPT', 'BREAK', 'DONE', 'PAUSE'])
 current_state = State.START
 sequence = generate(False)
 seq_index = -1
@@ -145,10 +145,17 @@ while True:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    current_state = State.PAUSE
 
         ticks = pygame.time.get_ticks()
         frame_result = {"handLandmarker": copy.deepcopy(detection_result), "trialStatus": -1, "time": datetime.datetime.now(), "ticks": ticks}
         result_file.write(str(frame_result)+"\n")
+
+        curr_trial = title.render('Trial {} of {}'.format(seq_index + 1, len(sequence)), True, grey)
+        curr_trial_rect = curr_trial.get_rect(center=(width // 2, height - 50))
+        screen.blit(curr_trial, curr_trial_rect)
 
         if(ticks >= start):
             seq_index += 1
@@ -165,8 +172,14 @@ while True:
                     current_state = State.BREAK
                     last_event = pygame.time.get_ticks()
                     start = last_event + (BREAK_TIME * 1000)
+                if event.key == pygame.K_p:
+                    current_state = State.PAUSE
         
-        if seq_index < len(sequence) : 
+        curr_trial = title.render('Trial {} of {}'.format(seq_index + 1, len(sequence)), True, grey)
+        curr_trial_rect = curr_trial.get_rect(center=(width // 2, height - 50))
+        screen.blit(curr_trial, curr_trial_rect)
+
+        if seq_index < len(sequence) and current_state is not State.PAUSE: 
             image_idx = CURR_POSES.index(sequence[seq_index])
             image = images[image_idx]
             ticks = pygame.time.get_ticks()
@@ -175,9 +188,26 @@ while True:
             frame_result = {"handLandmarker": copy.deepcopy(detection_result), "trialStatus": sequence[seq_index], "time": datetime.datetime.now(), "ticks": ticks}
             result_file.write(str(frame_result)+"\n")
             
-        else :
+        elif seq_index >= len(sequence) :
             current_state = State.DONE
             result_file.write('-------- Trial End : {}---------\n'.format(datetime.datetime.now()))
+    if current_state is State.PAUSE:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    current_state = State.BREAK
+                    last_event = pygame.time.get_ticks()
+                    start = last_event + (BREAK_TIME * 1000)
+
+        frame_result = {"handLandmarker": copy.deepcopy(detection_result), "trialStatus": -2, "time": datetime.datetime.now(), "ticks": ticks}
+        result_file.write(str(frame_result)+"\n")
+
+        pause_txt = title.render("Experiment paused. Press space to continue.", True, blue) 
+        pause_txt_rect = pause_txt.get_rect(center=(width // 2, height // 2+line_space))
+        screen.blit(pause_txt, pause_txt_rect)
     if current_state is State.DONE:
         text = title.render("Trial complete", True, blue)
         text2 = title.render("Press any key to quit.", True, blue) 
