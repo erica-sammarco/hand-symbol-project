@@ -174,19 +174,37 @@ def split_trial(trigger):
 
     # must be int (np.diff w/ input boolean outputs boolean?  lame)
     is_trial = (trigger != -1).astype(np.int8)
-    idx_trial_start = np.where(np.diff(is_trial) == 1)[0]
-    idx_trial_end = np.where(np.diff(is_trial) == -1)[0]
+    idx_trial_start = np.where(np.diff(is_trial) == 1)[0] + 1
+    idx_trial_end = np.where(np.diff(is_trial) == -1)[0] + 1
+
+    # discard if more than one trigger value during the trial
+    bool_keep = np.ones(idx_trial_end.size, dtype=bool)
+    list_start_end = list(zip(idx_trial_start, idx_trial_end))
+    for idx, (start_idx, end_idx) in enumerate(list_start_end):
+        if len(set(trigger[start_idx: end_idx])) != 1:
+            # trigger has more than one value during trial
+            bool_keep[idx] = False
+    idx_trial_end = idx_trial_end[bool_keep]
+    idx_trial_start = idx_trial_start[bool_keep]
+
     trial_length = idx_trial_end - idx_trial_start
 
     # we add one to compensate for insertion of leading -1 value
-    y = trigger[idx_trial_start + 1]
+    y = trigger[idx_trial_start]
 
     # note: np.diff discards first index, but we append a leading -1 to all trial_labels,
     # these effects negate each other
-    return idx_trial_start, y, min(trial_length)
+    return idx_trial_start - 1, y, min(trial_length)
 
 
 if __name__ == '__main__':
+    # test: discard heteregenous trial
+    idx_trial_start, y, trial_length = split_trial(
+        trigger=[2, 2, 2, -1, -1, 10, 9, 10, -1, 1, 1, 1, 1])
+    np.testing.assert_allclose(idx_trial_start, [0, 9])
+    np.testing.assert_allclose(y, [2, 1])
+    assert trial_length == 3
+
     # quick test case
     idx_trial_start, y, trial_length = split_trial(
         trigger=[2, 2, 2, -1, -1, 10, 10, 10, -1, 1, 1, 1, 1])
