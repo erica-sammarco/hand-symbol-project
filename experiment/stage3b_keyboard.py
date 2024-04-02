@@ -142,13 +142,13 @@ def draw_poses(screen):
 
 def draw_text(screen, seq_idx, target):
     if seq_idx != -1:
-        text_surface = title.render(PHRASE, True, white)
+        text_surface = subtitle.render(PHRASE, True, white)
         top_left_x = (width - text_surface.get_width())//2
         top_left_y = 265
         text_rect = text_surface.get_rect(topleft=(top_left_x, top_left_y))
 
         # Render the text up to the sequence index
-        so_far_surface = title.render(PHRASE[:seq_idx], True, grey)
+        so_far_surface = subtitle.render(PHRASE[:seq_idx], True, grey)
         screen.blit(so_far_surface, text_rect)
 
         # Render the second half of the text with color2
