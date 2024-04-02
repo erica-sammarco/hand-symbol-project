@@ -166,7 +166,8 @@ def split_trial(trigger):
     Returns:
         idx_trial_start (np.array): (num_trial) the first index of each trial
         y (np.array): label of trial
-        trial_length (int): number of indices contained in each trial
+        trial_length (np.array): (num_trial) number of indices contained in
+            each trial
     """
     # we append a leading and trailing -1 to trial_labels
     trigger = np.insert(trigger, 0, -1)
@@ -194,7 +195,7 @@ def split_trial(trigger):
 
     # note: np.diff discards first index, but we append a leading -1 to all trial_labels,
     # these effects negate each other
-    return idx_trial_start - 1, y, min(trial_length)
+    return idx_trial_start - 1, y, trial_length
 
 
 if __name__ == '__main__':
@@ -203,11 +204,11 @@ if __name__ == '__main__':
         trigger=[2, 2, 2, -1, -1, 10, 9, 10, -1, 1, 1, 1, 1])
     np.testing.assert_allclose(idx_trial_start, [0, 9])
     np.testing.assert_allclose(y, [2, 1])
-    assert trial_length == 3
+    assert min(trial_length) == 3
 
     # quick test case
     idx_trial_start, y, trial_length = split_trial(
         trigger=[2, 2, 2, -1, -1, 10, 10, 10, -1, 1, 1, 1, 1])
     np.testing.assert_allclose(idx_trial_start, [0, 5, 9])
     np.testing.assert_allclose(y, [2, 10, 1])
-    assert trial_length == 3
+    assert min(trial_length) == 3
