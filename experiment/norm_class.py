@@ -39,7 +39,7 @@ class NormClass:
     def predict(self, *args, **kwargs):
         """ predict class with min sum of squared error (all have same var) """
         log_prob = self.predict_log_prob(*args, **kwargs)
-        return log_prob.argmax(axis=1)
+        return self.class_label[log_prob.argmax(axis=1)]
 
     def predict_log_prob(self, x):
         n_sample, n_feat = x.shape
