@@ -1,4 +1,5 @@
 import numpy as np
+import pathlib
 from sklearn.neighbors import KNeighborsClassifier
 
 import parse
@@ -32,7 +33,8 @@ def process_file_data(filepath):
 
 def get_trained_classifier(participant_id, **kwargs):
     # load data
-    input_file = './calibration-results/{}.txt'.format(participant_id)
+    folder_key = pathlib.Path(__file__).parent / 'calibration-results'
+    input_file = '{}/{}.txt'.format(folder_key, participant_id)
     x_sklearn, y, trial_length = process_file_data(input_file)
 
     neigh = KNeighborsClassifier(**kwargs)

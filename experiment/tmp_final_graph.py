@@ -3,12 +3,13 @@ import re
 
 from train import get_trained_classifier, process_file_data
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 
 folder_key = pathlib.Path(__file__).parent / 'keyboard-results'
 
-participant_id = 'dy2szx'
+participant_id = '0u6vBd'
 
 file_dict = dict()
 for file in folder_key.glob(f'{participant_id}*.txt'):
@@ -41,4 +42,5 @@ df_mean_per_num_pose = df.groupby('num_pose').mean()
 import seaborn as sns
 
 sns.scatterplot(data=df_mean_per_num_pose, y='time (sec)', x='num_pose')
+plt.show()
 
