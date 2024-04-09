@@ -188,6 +188,12 @@ def split_trial(trigger):
     idx_trial_end = idx_trial_end[bool_keep]
     idx_trial_start = idx_trial_start[bool_keep]
 
+    for x, idx in enumerate(idx_trial_start):
+        if trigger[idx] == -2:
+            idx_trial_start = np.delete(idx_trial_start, x)
+            idx_trial_end = np.delete(idx_trial_end, x)
+
+
     trial_length = idx_trial_end - idx_trial_start
 
     # we add one to compensate for insertion of leading -1 value
@@ -211,4 +217,11 @@ if __name__ == '__main__':
         trigger=[2, 2, 2, -1, -1, 10, 10, 10, -1, 1, 1, 1, 1])
     np.testing.assert_allclose(idx_trial_start, [0, 5, 9])
     np.testing.assert_allclose(y, [2, 10, 1])
+    assert min(trial_length) == 3
+
+    # quick test case
+    idx_trial_start, y, trial_length = split_trial(
+        trigger=[2, 2, 2, -1, -1, -2, -2, -1, 1, 1, 1, 1])
+    np.testing.assert_allclose(idx_trial_start, [0, 8])
+    np.testing.assert_allclose(y, [2, 1])
     assert min(trial_length) == 3
