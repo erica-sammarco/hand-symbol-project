@@ -6,6 +6,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score, confusion_matrix
 import warnings
+from norm_class import NormClass 
 
 from experiment_values import PARTICIPANT_ID
 
@@ -49,11 +50,12 @@ for trial, label in zip(x.T, y):
 for label, trials in separated_data.items():
     separated_data[label] = np.array(trials).reshape(7, 3 * 21)
 
-n_splits = 3
+n_splits = 7
 
 k_fold = StratifiedKFold(n_splits=n_splits)
 
-norm_class = KNeighborsClassifier(n_neighbors=1)
+# norm_class = KNeighborsClassifier(n_neighbors=1)
+norm_class = NormClass()
 
 def find_best_combo2(remaining_labels):
     acc_dict = dict()
@@ -78,6 +80,7 @@ def find_best_combo2(remaining_labels):
     
 
     weakest_link = max(acc_dict, key=acc_dict.get)
+    print(acc_dict)
 
     return list(set(remaining_labels) - {weakest_link})
 
