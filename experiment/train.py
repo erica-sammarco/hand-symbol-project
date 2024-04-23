@@ -3,6 +3,7 @@ import pathlib
 from norm_class import NormClass
 import parse
 from register import HandRegister
+from sklearn.metrics import accuracy_score
 
 
 def process_file_data(filepath):
@@ -40,3 +41,20 @@ def get_trained_classifier(participant_id):
     clf.fit(x_sklearn, y)
 
     return clf
+
+if __name__ == '__main__':
+    participant_id = "EOx0vb"
+    
+    clf = get_trained_classifier(participant_id)
+
+    folder_key = pathlib.Path(__file__).parent / 'prompt-results'
+    input_file = '{}/{}_1.txt'.format(folder_key, participant_id)
+    x, y, trial_length = process_file_data(input_file)
+    print(x.shape)
+    print(y.shape)
+    y_pred = clf.predict(x)
+
+    print(y)
+    print(y_pred)
+
+    print(accuracy_score(y_pred=y_pred, y_true=y))
