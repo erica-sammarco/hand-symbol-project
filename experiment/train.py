@@ -1,7 +1,6 @@
 import numpy as np
 import pathlib
-from sklearn.neighbors import KNeighborsClassifier
-
+from norm_class import NormClass
 import parse
 from register import HandRegister
 
@@ -31,13 +30,13 @@ def process_file_data(filepath):
     return x_sklearn, y, trial_length
 
 
-def get_trained_classifier(participant_id, **kwargs):
+def get_trained_classifier(participant_id):
     # load data
     folder_key = pathlib.Path(__file__).parent / 'calibration-results'
     input_file = '{}/{}.txt'.format(folder_key, participant_id)
     x_sklearn, y, trial_length = process_file_data(input_file)
 
-    neigh = KNeighborsClassifier(**kwargs)
-    neigh.fit(x_sklearn, y)
+    clf = NormClass()
+    clf.fit(x_sklearn, y)
 
-    return neigh
+    return clf
