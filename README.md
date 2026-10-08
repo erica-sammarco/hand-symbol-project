@@ -57,7 +57,7 @@ The code was written for Python 3.9 (Anaconda) on macOS with:
 pip install mediapipe==0.10.9 opencv-python==4.9.0.80 pygame==2.5.2 numpy pandas scipy scikit-learn statsmodels matplotlib seaborn networkx jupyter
 ```
 
-The programs use the webcam. On macOS, the terminal app you run them from needs camera access (System Settings → Privacy & Security → Camera). If an iPhone is nearby, see [Camera problems](experiment/README.md#camera-problems).
+The programs use the webcam. On macOS, the terminal app you run them from needs camera access (System Settings → Privacy & Security → Camera).
 
 ## Presentation
 
