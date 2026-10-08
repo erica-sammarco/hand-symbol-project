@@ -9,6 +9,7 @@ The study runs in three stages. Run all commands from this `experiment/` folder,
 ```bash
 python stage1.py
 ```
+<img width="356" height="470" alt="Screenshot 2026-10-07 at 4 14 13 PM" src="https://github.com/user-attachments/assets/7be4f127-d702-4742-9a77-c086c8a4f167" />
 
 1. Press **L** or **R** for the hand being used.
 2. Hold each of 6 chosen poses in the red square and press **space** to photograph it.
@@ -44,10 +45,12 @@ Then run either task:
 ```bash
 python stage3a_prompt.py
 ```
+<img width="356" height="470" alt="Screenshot 2026-10-07 at 4 16 53 PM" src="https://github.com/user-attachments/assets/001bf1e5-4756-43e7-a2e6-71bf6d8c256c" />
 
 ```bash
 python stage3b_keyboard.py
 ```
+<img width="456" height="495" alt="Screenshot 2026-10-07 at 4 19 06 PM" src="https://github.com/user-attachments/assets/b147a64d-5099-42bd-9421-01f6027fc32a" />
 
 - **Prompt (`stage3a_prompt.py`):** an image of one of the participant's poses is shown, and they copy it.
 - **Keyboard (`stage3b_keyboard.py`):** the participant types `PHRASE`. Each key is outlined in a colour, and a legend shows which pose each colour means. To type the next letter, they find its key and make the matching pose. The colours change for every letter.
