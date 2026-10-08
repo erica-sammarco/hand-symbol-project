@@ -63,4 +63,4 @@ The programs use the webcam. On macOS, the terminal app you run them from needs 
 
 This project was presented at Northeastern University's annual RISE Expo (Spring 2024).
 
-The poster can be found [here](https://drive.google.com/file/d/1SAa8FkxiEywSGVBhTmxUxQs0_kC0NWsj/view?usp=sharing)
+The poster can be found [here](https://drive.google.com/file/d/1SAa8FkxiEywSGVBhTmxUxQs0_kC0NWsj/view?usp=sharing).
