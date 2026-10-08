@@ -59,7 +59,7 @@ In both tasks, **space** moves on to the next prompt once the pose is held, and 
 
 ## The 2024 study protocol
 
-Each session (about 45 minutes) went as follows:
+Each session (about 15 minutes) went as follows:
 
 1. Stage 1 calibration with 6 poses.
 2. Stage 2 ranking.
