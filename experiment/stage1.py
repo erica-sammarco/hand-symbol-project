@@ -46,6 +46,9 @@ participant_id = ''.join(random.choices(string.ascii_letters + string.digits, k=
 img_counter = 0
 initialized = False
 
+# Initialize Camera (before creating any participant files, in case it fails)
+cap = open_camera()
+
 # Create the images folder if it doesn't exist
 if(ACQUIRE_IMAGES): 
     IMG_FILEPATH = './images/{}'.format(participant_id)
@@ -53,9 +56,6 @@ if(ACQUIRE_IMAGES):
 
 # Initialize Clock
 clock = pygame.time.Clock()
-
-# Initialize Camera
-cap = cv2.VideoCapture(0)
 
 # Define the top-left and bottom-right coordinates of the square
 left_top = (175, 200)

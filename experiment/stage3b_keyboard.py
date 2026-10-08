@@ -76,7 +76,7 @@ phrase_index = -1
 clock = pygame.time.Clock()
 
 # Initialize Camera
-cap = cv2.VideoCapture(0)
+cap = open_camera()
 
 # Create an HandLandmarker object.
 base_options = python.BaseOptions(model_asset_path='../hand_landmarker.task')

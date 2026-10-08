@@ -1,9 +1,35 @@
 import glob
 import os
+import sys
+import time
 import numpy as np
 from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 import cv2
+
+# Which camera to use. 0 is usually the built-in camera, but macOS may list an
+# iPhone (Continuity Camera) first. Override without editing this file with:
+#   CAMERA_INDEX=1 python stage1.py
+CAMERA_INDEX = int(os.environ.get('CAMERA_INDEX', 0))
+
+# Open the camera and wait until it actually delivers a frame,
+# exiting with an explanation if it never does.
+def open_camera(index=CAMERA_INDEX, timeout=5):
+    cap = cv2.VideoCapture(index)
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        ret, _ = cap.read()
+        if ret:
+            return cap
+        time.sleep(0.1)
+    cap.release()
+    sys.exit(
+        'Camera {} is not sending frames.\n'
+        '  - If an iPhone is nearby, macOS may be using it as camera {} (Continuity Camera).\n'
+        '    Turn Continuity Camera off or try another camera, e.g. CAMERA_INDEX=1 python <script>.py\n'
+        '  - Close other apps using the camera (FaceTime, Zoom, Photo Booth, ...).\n'
+        '  - Check System Settings > Privacy & Security > Camera allows your terminal app.'
+        .format(index, index))
 
 # Define colors
 black = (0, 0, 0)
