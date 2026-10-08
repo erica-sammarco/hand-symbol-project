@@ -1,17 +1,97 @@
-To run the experiment:
-- First run stage1.py. 
-    - This will collect 10 images from the participant, 
-        then ask them to repeat each poses 3 times in a random order, 
-        collecting sufficient data to be used to classify the hand poses.
-    - The Participant ID will be recorded in participants.txt. You will need this value for the remaining stages. 
-    - Results of stage 1 are recorded in the calibration-results folder, and images are stored in ./images under a folder with the appropriate participant ID. 
-- Next, open stage2.ipynb.Find the Participant ID for your trial from 
-    - At the top of the notebook, change the participant ID to the current participant.
-    - Run all cells. 
-    - At the bottom of the notebook, the ordered list of most identifiable hand poses will be outputted.
-- Copy the Participant ID (PARTICIPANT_ID) and the list of best combinations (POSES) into the appropriate fields of experiment_values.txt
-- Determine how many poses you would like to use for the trials 
-    i.e. how many poses the participant should be prompted with
-    Enter this value as NUM_POSES field of the experiment_values.txt
-- Run stage3a_prompt.py to run the trial in which the user will be prompted via images of the hand poses.
-- Run stage3b_keyboard.py to run the trial in which the user will be asked to type a phrase, prompted by letters and the poses associated with a colored keyboard. 
+# Experiment
+
+The study runs in three stages. Run all commands from this `experiment/` folder, because the programs use relative paths. See the [main README](../README.md) for setup and results.
+
+## Running a session
+
+### Stage 1: choose and calibrate poses
+
+```bash
+python stage1.py
+```
+
+1. Press **L** or **R** for the hand being used.
+2. Hold each of 6 chosen poses in the red square and press **space** to photograph it.
+3. Press **space** to start calibration. Each pose is shown 7 times in random order (42 trials). For each one: get into the pose, hold it when the beep sounds, then relax. Press **P** to pause and **space** to resume.
+
+The program generates a random 6-character **participant ID** and records it in `participants.txt`. You'll need this ID for the later stages. The program saves the pose photos to `images/<id>/` and the calibration data to `calibration-results/<id>.txt`.
+
+### Stage 2: rank the poses
+
+Put the participant ID in `experiment_values.py`, then run either:
+
+- `python stage2.py`, which prints the poses ordered from most to least distinguishable, or
+- `stage2-visual.ipynb` (set `PARTICIPANT_ID` in its first cell), which shows the same ranking plus plots of the normalised hands and a confusion matrix.
+
+The ranking repeatedly drops the pose whose removal most improves classification accuracy. Two things to keep in mind:
+
+- When several poses tie (often at 100%), the lowest-numbered pose is dropped first, so the later part of the order can be arbitrary. Look at the printed accuracies, not just the final list.
+- `stage2.py` ranks with `NormClass`, the same classifier `train.py` uses. The notebook's ranking cell uses 1-nearest-neighbour instead.
+
+### Stage 3: prompt and keyboard tasks
+
+Edit `experiment_values.py`:
+
+| Setting | Meaning |
+|---------|---------|
+| `PARTICIPANT_ID` | the ID from stage 1 |
+| `POSES` | the pose order from stage 2, best first |
+| `NUM_POSES` | how many poses to use this block (the first `NUM_POSES` of `POSES`) |
+| `PHRASE`, `SEED`, `USE_SEED` | the phrase to type and the seed for the keyboard's colour assignments |
+
+Then run either task:
+
+```bash
+python stage3a_prompt.py
+```
+
+```bash
+python stage3b_keyboard.py
+```
+
+- **Prompt (`stage3a_prompt.py`):** an image of one of the participant's poses is shown, and they copy it.
+- **Keyboard (`stage3b_keyboard.py`):** the participant types `PHRASE`. Each key is outlined in a colour, and a legend shows which pose each colour means. To type the next letter, they find its key and make the matching pose. The colours change for every letter.
+
+In both tasks, **space** moves on to the next prompt once the pose is held, and **P** pauses. Each prompt is followed by a 2 s break. Nothing is recognised live; the hand landmarks for every frame are logged for analysis.
+
+## The 2024 study protocol
+
+Each session (about 45 minutes) went as follows:
+
+1. Stage 1 calibration with 6 poses.
+2. Stage 2 ranking.
+3. A 6-pose keyboard **practice run**. Every participant after the first (`KrpKfx`) did one to ensure they understood the protocol before beginning the experiment block.
+4. For each of 2, 4 and 6 poses: a prompt block, then a keyboard block. The order of the three pose counts was counterbalanced, and each of the 6 possible orders was used twice.
+
+Twelve participants took part (Apr 9–22, 2024): `KrpKfx`, `uVoAnv`, `2iTyoP`, `9Z0czI`, `on7sut`, `yX98eE`, `DO3yNb`, `EOx0vb`, `zUmr0W`, `3SePwH`, `3H1N53`, `O8gX1A`.
+
+Other data in the result folders is **not** part of the study:
+- `jtdawc` and calibration-only IDs from Feb–Mar 2024 are pilot sessions with earlier settings.
+- `dy2szx` (Apr 2) and `0u6vBd` (Apr 9) were full dry runs of the procedure.
+- The remaining calibration-only IDs are aborted or test runs.
+
+## Data files
+
+| File | Contents |
+|------|----------|
+| `participants.txt` | every participant ID generated by stage 1, with a timestamp |
+| `calibration-results/<id>.txt` | the calibration settings, then one line per camera frame |
+| `prompt-results/<id>_<n>.txt`, `keyboard-results/<id>_<n>.txt` | the block settings (`POSES`, `SEQUENCE`, ...), then one line per camera frame |
+| `*/a_result_record.txt` | a log of when each run started |
+| `images/<id>/pose_<k>.png` | the participant's pose photos; pose numbers match the labels in the data |
+
+Each frame line contains the MediaPipe hand landmarks, a `trialStatus` (`-1` between prompts, `-2` paused, `0`–`5` the pose being prompted) and a timestamp.
+
+- **`<n>` counts that participant's runs in that folder, in the order they were started.** It does not identify the condition. Read the number of poses from the file's `POSES` line. Aborted runs (no `Trial End` line) and practice runs also take a number.
+- **The frame rate is about 15 fps, not the 30 the programs aim for.** Hand tracking runs on every frame, which slows the loop. Use the logged timestamps for timing, not frame counts.
+
+## Analysis
+
+| File | What it is |
+|------|------------|
+| [`Results.ipynb`](Results.ipynb) | **The analysis of the 2024 study.** Matches files to conditions, trains a classifier per participant from calibration, and reports response time, accuracy and information transfer rate. Saves the figures to `figures/`. |
+| `train.py` | `get_trained_classifier(id)`: a `NormClass` classifier trained on a participant's calibration |
+| `parse.py`, `register.py`, `norm_class.py` | log parsing, hand alignment (`HandRegister`) and the classifier (`NormClass`) |
+| `Graphs.ipynb` | Earlier work-in-progress analysis, superseded by `Results.ipynb`. It treats frames as 1/30 s (halving all times), can pick a practice run as a 6-pose keyboard block, and its accuracy section is unfinished. |
+
+`parse.parse()` keeps only frames where a hand was detected, so it isn't suitable for timing. `Results.ipynb` has its own frame reader for this reason.
